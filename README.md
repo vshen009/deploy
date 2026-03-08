@@ -18,3 +18,7 @@ curl -fsSL https://dl.laobaiapi.cc/v1/opencode-setup.sh | bash
 
 - https://dl.laobaiapi.cc/opencode.template.json
 - https://dl.laobaiapi.cc/v1/opencode.template.json
+
+## Extra scripts
+
+- `scripts/fix-opencode-clipboard.sh` (Rocky Linux clipboard deps fix)
