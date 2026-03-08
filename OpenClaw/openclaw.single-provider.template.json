@@ -1,0 +1,33 @@
+{
+  "models": {
+    "mode": "replace",
+    "providers": {
+      "laobai": {
+        "baseUrl": "https://laobaiapi.cc/v1",
+        "apiKey": "__LAOBAI_API_KEY__",
+        "api": "openai-responses",
+        "authHeader": true,
+        "headers": {
+          "User-Agent": "curl/8.5.0"
+        },
+        "models": [
+          {
+            "id": "gpt-5.3-codex",
+            "name": "GPT-5.3 Codex (via laobai)",
+            "api": "openai-responses",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 204800,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  }
+}
