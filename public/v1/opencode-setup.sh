@@ -268,6 +268,99 @@ one_click() {
   configure_apikey
 }
 
+install_clipboard_deps() {
+  if command -v xclip >/dev/null 2>&1 || command -v xsel >/dev/null 2>&1 || command -v wl-copy >/dev/null 2>&1 || command -v pbcopy >/dev/null 2>&1; then
+    green "已检测到可用剪贴板工具。"
+    return 0
+  fi
+
+  if command -v dnf >/dev/null 2>&1; then
+    yellow "检测到 dnf，准备安装剪贴板依赖..."
+    sudo dnf install -y epel-release || true
+    sudo dnf config-manager --set-enabled crb || true
+    sudo dnf makecache || true
+    sudo dnf install -y xclip xsel wl-clipboard
+    return 0
+  fi
+
+  if command -v apt-get >/dev/null 2>&1; then
+    yellow "检测到 apt，准备安装剪贴板依赖..."
+    sudo apt-get update
+    sudo apt-get install -y xclip xsel wl-clipboard
+    return 0
+  fi
+
+  if command -v brew >/dev/null 2>&1; then
+    yellow "检测到 macOS 环境，系统通常自带 pbcopy。"
+    return 0
+  fi
+
+  red "未识别包管理器，无法自动安装剪贴板依赖。"
+  return 1
+}
+
+write_osc52_bridge() {
+  mkdir -p "$HOME/.local/bin"
+
+  cat > "$HOME/.local/bin/osc52" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ ! -t 0 ]; then
+  data="$(cat)"
+else
+  data="${*:-}"
+fi
+
+if [[ -z "$data" ]]; then
+  echo "用法: echo 'text' | osc52 或 osc52 'text'" >&2
+  exit 1
+fi
+
+if command -v pbcopy >/dev/null 2>&1; then
+  printf "%s" "$data" | pbcopy
+  echo "已复制到剪贴板 (pbcopy)"
+  exit 0
+fi
+
+if command -v wl-copy >/dev/null 2>&1 && [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
+  printf "%s" "$data" | wl-copy
+  echo "已复制到剪贴板 (wl-copy)"
+  exit 0
+fi
+
+if command -v xclip >/dev/null 2>&1; then
+  printf "%s" "$data" | xclip -selection clipboard -quiet
+  echo "已复制到剪贴板 (xclip)"
+  exit 0
+fi
+
+if command -v xsel >/dev/null 2>&1; then
+  printf "%s" "$data" | xsel --clipboard --input
+  echo "已复制到剪贴板 (xsel)"
+  exit 0
+fi
+
+echo "错误: 未找到可用剪贴板工具，请先安装 xclip/xsel/wl-clipboard" >&2
+exit 1
+EOF
+
+  chmod +x "$HOME/.local/bin/osc52"
+  green "已写入剪贴板桥接脚本：$HOME/.local/bin/osc52"
+}
+
+fix_clipboard() {
+  install_clipboard_deps
+  write_osc52_bridge
+
+  if printf "opencode-clipboard-test" | "$HOME/.local/bin/osc52" >/dev/null 2>&1; then
+    green "剪贴板修复完成，测试通过。"
+  else
+    yellow "脚本已安装，但测试未通过（常见于远程/无图形会话）。"
+    yellow "请在本地图形终端执行：echo test | osc52"
+  fi
+}
+
 main_menu() {
   while true; do
     echo
@@ -275,14 +368,16 @@ main_menu() {
     echo "1) 安装 opencode"
     echo "2) 配置 API Key"
     echo "3) 一键执行（安装 + 配置）"
+    echo "4) 修复剪贴板问题"
     echo "0) 退出"
     echo "======================================="
-    read -r -p "请选择 [0-3]: " choice
+    read -r -p "请选择 [0-4]: " choice
 
     case "$choice" in
       1) install_opencode || true ;;
       2) configure_apikey || true ;;
       3) one_click || true ;;
+      4) fix_clipboard || true ;;
       0) echo "已退出"; exit 0 ;;
       *) red "无效选项，请重新输入。" ;;
     esac
