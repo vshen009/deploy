@@ -176,6 +176,5 @@
       }
     }
   },
-  "$schema": "https://opencode.ai/config.json",
-  "apiKey": ""
+  "$schema": "https://opencode.ai/config.json"
 }

@@ -137,19 +137,23 @@ save_api_key() {
   fi
 
   umask 077
-  local escaped
-  escaped="$(json_escape "$key")"
 
   if command -v jq >/dev/null 2>&1 && [[ -s "$CONFIG_FILE" ]]; then
     local tmp
     tmp="$(mktemp)"
-    if jq --arg k "$key" '(.apiKey = $k) | (.provider.openai.options.apiKey = $k)' "$CONFIG_FILE" > "$tmp" 2>/dev/null; then
+    if jq --arg k "$key" '.provider.openai.options.apiKey = $k' "$CONFIG_FILE" > "$tmp" 2>/dev/null; then
       mv "$tmp" "$CONFIG_FILE"
     else
       rm -f "$tmp"
       cat > "$CONFIG_FILE" <<EOF
 {
-  "apiKey": "$escaped"
+  "provider": {
+    "openai": {
+      "options": {
+        "apiKey": "$key"
+      }
+    }
+  }
 }
 EOF
     fi
@@ -178,8 +182,12 @@ def update_api_key(value):
             update_api_key(item)
 
 update_api_key(data)
+
 if isinstance(data, dict):
-    data["apiKey"] = key
+    provider = data.setdefault("provider", {})
+    openai = provider.setdefault("openai", {})
+    options = openai.setdefault("options", {})
+    options["apiKey"] = key
 
 print(json.dumps(data, ensure_ascii=False, indent=2))
 PY
@@ -189,14 +197,26 @@ PY
       rm -f "$tmp"
       cat > "$CONFIG_FILE" <<EOF
 {
-  "apiKey": "$escaped"
+  "provider": {
+    "openai": {
+      "options": {
+        "apiKey": "$key"
+      }
+    }
+  }
 }
 EOF
     fi
   else
     cat > "$CONFIG_FILE" <<EOF
 {
-  "apiKey": "$escaped"
+  "provider": {
+    "openai": {
+      "options": {
+        "apiKey": "$key"
+      }
+    }
+  }
 }
 EOF
   fi
