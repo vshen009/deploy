@@ -19,7 +19,7 @@
     }
   },
   "models": {
-    "mode": "replace",
+    "mode": "merge",
     "providers": {
       "laobai": {
         "baseUrl": "https://laobaiapi.cc/v1",
