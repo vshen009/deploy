@@ -8,17 +8,23 @@
 ## 一行下载运行（推荐）
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/vshen009/deploy/main/OpenClaw/install_openclaw_rocky.sh)
+curl -fsSL https://dl.laobaiapi.cc/openclaw-setup.sh | bash
 ```
 
 > 适合 Rocky / RHEL 系。脚本会自动弹出菜单，让你选择“全新安装”或“注入 laobai provider”。
 
+版本固定（v1）：
+
+```bash
+curl -fsSL https://dl.laobaiapi.cc/v1/openclaw-setup.sh | bash
+```
+
 ## 仓库内手动运行（调试用）
 
 ```bash
-cd OpenClaw
-chmod +x install_openclaw_rocky.sh
-./install_openclaw_rocky.sh
+curl -fsSL https://dl.laobaiapi.cc/openclaw-setup.sh -o openclaw-setup.sh
+chmod +x openclaw-setup.sh
+./openclaw-setup.sh
 ```
 
 脚本会弹出 2 个菜单：

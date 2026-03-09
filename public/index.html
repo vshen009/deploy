@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenClaw 一键安装 / 注入配置</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --accent: #0ea5e9;
+      --border: #dbe3ee;
+      --code-bg: #0b1220;
+      --code-text: #dbeafe;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    h1, h2 { margin: 0 0 12px; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; margin-top: 8px; }
+    p, li { color: var(--muted); }
+    code {
+      background: #eef4ff;
+      border-radius: 6px;
+      padding: 1px 6px;
+      color: #0b3b66;
+    }
+    pre {
+      margin: 0;
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 10px;
+      padding: 14px;
+      overflow-x: auto;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <h1>OpenClaw 一键安装 / 注入配置（Rocky Linux）</h1>
+      <p>目标：</p>
+      <ul>
+        <li>方式一：全新安装 OpenClaw，并生成一个可启动的单 provider（laobai）配置。</li>
+        <li>方式二：对已安装 OpenClaw 注入 laobai provider，并把默认模型切到 <code>laobai/gpt-5.3-codex</code>。</li>
+        <li>两种方式都会补齐最低启动要件：<code>gateway.mode=local</code>、<code>gateway.auth.token</code>、默认模型。</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>一行下载运行（推荐）</h2>
+      <pre><code>curl -fsSL https://dl.laobaiapi.cc/openclaw-setup.sh | bash</code></pre>
+    </section>
+
+    <section class="card">
+      <h2>版本固定（v1）</h2>
+      <pre><code>curl -fsSL https://dl.laobaiapi.cc/v1/openclaw-setup.sh | bash</code></pre>
+    </section>
+
+    <section class="card">
+      <h2>可选参数</h2>
+      <pre><code>bash openclaw-setup.sh --fresh
+bash openclaw-setup.sh --inject
+bash openclaw-setup.sh --help</code></pre>
+    </section>
+
+    <section class="card">
+      <h2>文档与仓库</h2>
+      <ul>
+        <li>README：<a href="https://github.com/vshen009/deploy/blob/main/OpenClaw/README.md">OpenClaw/README.md</a></li>
+        <li>仓库：<a href="https://github.com/vshen009/deploy">vshen009/deploy</a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

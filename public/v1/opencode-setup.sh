@@ -21,6 +21,33 @@ green()  { printf "\033[32m%s\033[0m\n" "$*"; }
 yellow() { printf "\033[33m%s\033[0m\n" "$*"; }
 red()    { printf "\033[31m%s\033[0m\n" "$*"; }
 
+has_tty() {
+  [[ -r /dev/tty ]]
+}
+
+prompt_read() {
+  local __var_name="$1"
+  local __prompt="$2"
+  local __value=""
+  if ! has_tty; then
+    return 1
+  fi
+  read -r -p "$__prompt" __value < /dev/tty
+  printf -v "$__var_name" "%s" "$__value"
+}
+
+prompt_read_secret() {
+  local __var_name="$1"
+  local __prompt="$2"
+  local __value=""
+  if ! has_tty; then
+    return 1
+  fi
+  read -r -s -p "$__prompt" __value < /dev/tty
+  echo
+  printf -v "$__var_name" "%s" "$__value"
+}
+
 resolve_install_cmd() {
   if [[ -n "$INSTALL_CMD" ]]; then
     printf "%s" "$INSTALL_CMD"
@@ -231,15 +258,23 @@ configure_apikey() {
   echo "请选择输入方式："
   echo "1) 明文输入（可见）"
   echo "2) 隐藏输入（推荐）"
-  read -r -p "输入选项 [1/2]： " mode
+  if ! prompt_read mode "输入选项 [1/2]： "; then
+    red "当前会话不可交互，请设置 OPENCODE_API_KEY 后重试。"
+    return 1
+  fi
 
   case "$mode" in
     1)
-      read -r -p "请输入 API Key（明文）： " key
+      if ! prompt_read key "请输入 API Key（明文）： "; then
+        red "当前会话不可交互，请设置 OPENCODE_API_KEY 后重试。"
+        return 1
+      fi
       ;;
     2|"")
-      read -r -s -p "请输入 API Key（隐藏）： " key
-      echo
+      if ! prompt_read_secret key "请输入 API Key（隐藏）： "; then
+        red "当前会话不可交互，请设置 OPENCODE_API_KEY 后重试。"
+        return 1
+      fi
       ;;
     *)
       red "无效选项。"
@@ -255,7 +290,10 @@ configure_apikey() {
   p="$(preview_key "$key")"
   yellow "Key 预览：$p"
 
-  read -r -p "确认保存这个 Key？[y/N]: " confirm
+  if ! prompt_read confirm "确认保存这个 Key？[y/N]: "; then
+    red "当前会话不可交互，请设置 OPENCODE_API_KEY 后重试。"
+    return 1
+  fi
   if [[ "${confirm,,}" == "y" ]]; then
     save_api_key "$key"
   else
@@ -371,7 +409,11 @@ main_menu() {
     echo "4) 修复剪贴板问题"
     echo "0) 退出"
     echo "======================================="
-    read -r -p "请选择 [0-4]: " choice
+    if ! prompt_read choice "请选择 [0-4]: "; then
+      red "未检测到可交互终端，无法显示菜单。"
+      yellow "可使用：OPENCODE_API_KEY='sk-...' bash opencode-setup.sh --one-click"
+      return 1
+    fi
 
     case "$choice" in
       1) install_opencode || true ;;
@@ -384,4 +426,52 @@ main_menu() {
   done
 }
 
-main_menu
+run_cli() {
+  local cmd="${1:-menu}"
+  local env_key="${OPENCODE_API_KEY:-}"
+  local key="$env_key"
+
+  case "$cmd" in
+    --install)
+      install_opencode
+      ;;
+    --configure)
+      if [[ -n "$key" ]]; then
+        save_api_key "$key"
+      else
+        configure_apikey
+      fi
+      ;;
+    --one-click)
+      install_opencode
+      if [[ -n "$key" ]]; then
+        save_api_key "$key"
+      else
+        configure_apikey
+      fi
+      ;;
+    --fix-clipboard)
+      fix_clipboard
+      ;;
+    --help|-h)
+      cat <<'EOF'
+用法:
+  bash opencode-setup.sh
+  bash opencode-setup.sh --install
+  OPENCODE_API_KEY='sk-xxx' bash opencode-setup.sh --configure
+  OPENCODE_API_KEY='sk-xxx' bash opencode-setup.sh --one-click
+  bash opencode-setup.sh --fix-clipboard
+EOF
+      ;;
+    menu|"")
+      main_menu
+      ;;
+    *)
+      red "未知参数: $cmd"
+      yellow "使用 --help 查看可用命令。"
+      return 1
+      ;;
+  esac
+}
+
+run_cli "${1:-menu}"
