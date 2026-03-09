@@ -29,7 +29,7 @@ chmod +x install_openclaw_rocky.sh
 脚本会：
 1. 安装 Node.js 22 + npm
 2. 全局安装 OpenClaw CLI
-3. 询问 laobai API Key
+3. 询问 laobai API Key（静默输入，回车后会显示“前4位 + 掩码 + 后4位”用于校验）
 4. 自动生成 gateway token
 5. 写入一份可启动的 `~/.openclaw/openclaw.json`
 6. 尝试启动 gateway 并输出状态
@@ -40,11 +40,12 @@ chmod +x install_openclaw_rocky.sh
 脚本会：
 1. 读取现有 `~/.openclaw/openclaw.json`
 2. 先做一个时间戳备份 `openclaw.json.bak.YYYYmmdd-HHMMSS`
-3. 注入 `models.providers.laobai`
-4. 将 `agents.defaults.model.primary` 改成 `laobai/gpt-5.3-codex`
-5. 在 `agents.defaults.models` 中加入 `laobai/gpt-5.3-codex`
-6. 若缺少 `gateway.mode` / `gateway.auth.token`，自动补齐，保证能启动
-7. 尝试启动 gateway 并输出状态
+3. 询问 laobai API Key（静默输入，回车后会显示“前4位 + 掩码 + 后4位”用于校验）
+4. 注入 `models.providers.laobai`
+5. 将 `agents.defaults.model.primary` 改成 `laobai/gpt-5.3-codex`
+6. 在 `agents.defaults.models` 中加入 `laobai/gpt-5.3-codex`
+7. 若缺少 `gateway.mode` / `gateway.auth.token`，自动补齐，保证能启动
+8. 尝试启动 gateway 并输出状态
 
 ## 模板文件
 

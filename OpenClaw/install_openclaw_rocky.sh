@@ -39,6 +39,28 @@ prompt_key() {
     echo "API Key 不能为空，退出。"
     exit 1
   fi
+
+  local key_len=${#LAOBAI_API_KEY}
+  local head="${LAOBAI_API_KEY:0:4}"
+  local tail="${LAOBAI_API_KEY:key_len-4:4}"
+  local mask_len=$(( key_len - 8 ))
+  local middle_mask=""
+
+  if (( key_len <= 8 )); then
+    # 太短时避免暴露过多信息
+    if (( key_len <= 4 )); then
+      head="${LAOBAI_API_KEY:0:1}"
+      tail="${LAOBAI_API_KEY:key_len-1:1}"
+    else
+      head="${LAOBAI_API_KEY:0:2}"
+      tail="${LAOBAI_API_KEY:key_len-2:2}"
+    fi
+    middle_mask="****"
+  else
+    middle_mask=$(printf '%*s' "$mask_len" '' | tr ' ' '*')
+  fi
+
+  echo "已接收 API Key（校验展示）：${head}${middle_mask}${tail}"
 }
 
 write_fresh_config() {
