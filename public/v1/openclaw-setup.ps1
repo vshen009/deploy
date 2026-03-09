@@ -26,13 +26,13 @@ function Ensure-Node {
   }
 
   if (Get-Command winget -ErrorAction SilentlyContinue) {
-    Write-Yellow "未检测到 npm，尝试通过 winget 安装 Node.js LTS..."
+    Write-Yellow "npm not found. Trying to install Node.js LTS via winget..."
     winget install --id OpenJS.NodeJS.LTS -e --silent --accept-package-agreements --accept-source-agreements
     Refresh-Path
   }
 
   if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-    throw "未检测到 npm。请先安装 Node.js（https://nodejs.org/）后重试。"
+    throw "npm not found. Please install Node.js first: https://nodejs.org/"
   }
 }
 
@@ -42,12 +42,12 @@ function Ensure-OpenClaw {
   }
 
   Ensure-Node
-  Write-Yellow "开始安装 OpenClaw CLI..."
+  Write-Yellow "Installing OpenClaw CLI..."
   npm install -g openclaw
   Refresh-Path
 
   if (-not (Get-Command openclaw -ErrorAction SilentlyContinue)) {
-    throw "安装完成后仍未检测到 openclaw 命令。"
+    throw "Install completed, but openclaw command is still unavailable."
   }
 }
 
@@ -76,7 +76,7 @@ function Prompt-ApiKey {
     return $ApiKey
   }
 
-  $secure = Read-Host "请输入 laobai API Key（隐藏）" -AsSecureString
+  $secure = Read-Host "Enter laobai API Key (hidden)" -AsSecureString
   $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
   try {
     $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
@@ -85,10 +85,10 @@ function Prompt-ApiKey {
   }
 
   if ([string]::IsNullOrWhiteSpace($plain)) {
-    throw "API Key 不能为空。"
+    throw "API Key cannot be empty."
   }
 
-  Write-Host "已接收 API Key（校验展示）：$(Get-KeyMasked $plain)"
+  Write-Host "API Key received (masked): $(Get-KeyMasked $plain)"
   return $plain
 }
 
@@ -155,11 +155,11 @@ function Inject-Laobai([string]$key, [string]$token) {
   if (Test-Path $ConfigPath) {
     $bak = "$ConfigPath.bak.$(Get-Date -Format yyyyMMdd-HHmmss)"
     Copy-Item $ConfigPath $bak -Force
-    Write-Yellow "已备份旧配置：$bak"
+    Write-Yellow "Backed up previous config: $bak"
     try {
       $obj = Get-Content $ConfigPath -Raw | ConvertFrom-Json
     } catch {
-      throw "现有 openclaw.json 不是合法 JSON，无法注入。"
+      throw "Existing openclaw.json is not valid JSON. Injection aborted."
     }
   } else {
     $obj = [pscustomobject]@{}
@@ -218,7 +218,7 @@ function Post-Check {
 
 function Show-Help {
 @"
-用法:
+Usage:
   powershell -ExecutionPolicy Bypass -File .\openclaw-setup.ps1
   powershell -ExecutionPolicy Bypass -File .\openclaw-setup.ps1 -Mode fresh
   powershell -ExecutionPolicy Bypass -File .\openclaw-setup.ps1 -Mode inject
@@ -230,18 +230,18 @@ function Run-Fresh {
   Ensure-OpenClaw
   $key = Prompt-ApiKey
   $token = New-Token
-  Write-Yellow "==> 生成全新 openclaw.json"
+  Write-Yellow "==> Generating fresh openclaw.json"
   Write-FreshConfig -key $key -token $token
   Post-Check
-  Write-Green "完成：配置文件路径 -> $ConfigPath"
-  Write-Green "请保存好 Gateway token：$token"
+  Write-Green "Done: config path -> $ConfigPath"
+  Write-Green "Save your Gateway token: $token"
 }
 
 function Run-Inject {
   Ensure-OpenClaw
   $key = Prompt-ApiKey
   $token = New-Token
-  Write-Yellow "==> 注入 laobai provider 并切换默认模型"
+  Write-Yellow "==> Injecting laobai provider and switching default model"
   Inject-Laobai -key $key -token $token
   Post-Check
 
@@ -253,8 +253,8 @@ function Run-Inject {
     }
   } catch {}
 
-  Write-Green "完成：配置文件路径 -> $ConfigPath"
-  Write-Green "请保存好 Gateway token：$finalToken"
+  Write-Green "Done: config path -> $ConfigPath"
+  Write-Green "Save your Gateway token: $finalToken"
 }
 
 if ($Help) {
@@ -266,10 +266,10 @@ switch ($Mode) {
   "fresh" { Run-Fresh; exit 0 }
   "inject" { Run-Inject; exit 0 }
   "menu" {
-    Write-Host "请选择模式："
-    Write-Host "  1) 全新安装 OpenClaw（生成干净单 provider laobai 配置）"
-    Write-Host "  2) 已安装 OpenClaw，注入 laobai provider 并切默认模型"
-    $choice = Read-Host "输入 1 或 2"
+    Write-Host "Choose mode:"
+    Write-Host "  1) Fresh install OpenClaw (single-provider laobai config)"
+    Write-Host "  2) Existing OpenClaw: inject laobai provider and switch default model"
+    $choice = Read-Host "Enter 1 or 2"
     if ($choice -eq "1") {
       Run-Fresh
       exit 0
@@ -278,6 +278,6 @@ switch ($Mode) {
       Run-Inject
       exit 0
     }
-    throw "无效选择，退出。"
+    throw "Invalid selection. Exit."
   }
 }

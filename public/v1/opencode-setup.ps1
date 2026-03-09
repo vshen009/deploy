@@ -24,13 +24,13 @@ function Ensure-Node {
   }
 
   if (Get-Command winget -ErrorAction SilentlyContinue) {
-    Write-Yellow "未检测到 npm，尝试通过 winget 安装 Node.js LTS..."
+    Write-Yellow "npm not found. Trying to install Node.js LTS via winget..."
     winget install --id OpenJS.NodeJS.LTS -e --silent --accept-package-agreements --accept-source-agreements
     Refresh-Path
   }
 
   if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
-    throw "未检测到 npm。请先安装 Node.js（https://nodejs.org/）后重试。"
+    throw "npm not found. Please install Node.js first: https://nodejs.org/"
   }
 }
 
@@ -46,7 +46,7 @@ function Resolve-InstallCommand {
 
 function Install-OpenCode {
   if (Get-Command opencode -ErrorAction SilentlyContinue) {
-    Write-Green "检测到 opencode 已安装：$((Get-Command opencode).Source)"
+    Write-Green "opencode is already installed: $((Get-Command opencode).Source)"
     try { opencode --version | Out-Host } catch {}
     return
   }
@@ -54,25 +54,25 @@ function Install-OpenCode {
   Ensure-Node
   $cmd = Resolve-InstallCommand
   if (-not $cmd) {
-    throw "未检测到可用安装命令（npm / pnpm）。"
+    throw "No supported install command found (npm / pnpm)."
   }
 
-  Write-Yellow "开始安装 opencode..."
-  Write-Yellow "执行命令: $cmd"
+  Write-Yellow "Installing opencode..."
+  Write-Yellow "Running command: $cmd"
   Invoke-Expression $cmd
 
   Refresh-Path
   if (Get-Command opencode -ErrorAction SilentlyContinue) {
-    Write-Green "安装成功：$((Get-Command opencode).Source)"
+    Write-Green "Install succeeded: $((Get-Command opencode).Source)"
     try { opencode --version | Out-Host } catch {}
   } else {
-    throw "安装命令执行完成，但未检测到 opencode 命令。"
+    throw "Install command completed, but opencode command is still unavailable."
   }
 }
 
 function Save-ApiKey([string]$Key) {
   if ([string]::IsNullOrWhiteSpace($Key)) {
-    throw "API Key 不能为空。"
+    throw "API Key cannot be empty."
   }
 
   $configDir = Join-Path $env:APPDATA "opencode"
@@ -83,7 +83,7 @@ function Save-ApiKey([string]$Key) {
   if (Test-Path $configFile) {
     $bak = "$configFile.bak.$(Get-Date -Format yyyyMMddHHmmss)"
     Copy-Item $configFile $bak -Force
-    Write-Yellow "已备份旧配置：$bak"
+    Write-Yellow "Backed up previous config: $bak"
   }
 
   $json = $null
@@ -111,13 +111,13 @@ function Save-ApiKey([string]$Key) {
   $json.provider.openai.options.apiKey = $Key
   $json | ConvertTo-Json -Depth 100 | Set-Content -Path $configFile -Encoding UTF8
 
-  Write-Green "API Key 已写入：$configFile"
+  Write-Green "API Key saved to: $configFile"
 }
 
 function Configure-ApiKey {
   $key = $ApiKey
   if ([string]::IsNullOrWhiteSpace($key)) {
-    $secure = Read-Host "请输入 API Key（隐藏）" -AsSecureString
+    $secure = Read-Host "Enter API Key (hidden)" -AsSecureString
     $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
     try {
       $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
@@ -131,7 +131,7 @@ function Configure-ApiKey {
 
 function Show-Help {
 @"
-用法:
+Usage:
   powershell -ExecutionPolicy Bypass -File .\opencode-setup.ps1
   powershell -ExecutionPolicy Bypass -File .\opencode-setup.ps1 -Install
   powershell -ExecutionPolicy Bypass -File .\opencode-setup.ps1 -Configure -ApiKey 'sk-xxx'
@@ -142,19 +142,19 @@ function Show-Help {
 function Show-Menu {
   while ($true) {
     Write-Host ""
-    Write-Host "========== OpenCode 一键脚本 (Windows) =========="
-    Write-Host "1) 安装 opencode"
-    Write-Host "2) 配置 API Key"
-    Write-Host "3) 一键执行（安装 + 配置）"
-    Write-Host "0) 退出"
-    $choice = Read-Host "请选择 [0-3]"
+    Write-Host "========== OpenCode One-Click Script (Windows) =========="
+    Write-Host "1) Install opencode"
+    Write-Host "2) Configure API Key"
+    Write-Host "3) One-click (Install + Configure)"
+    Write-Host "0) Exit"
+    $choice = Read-Host "Choose [0-3]"
 
     switch ($choice) {
       "1" { Install-OpenCode }
       "2" { Configure-ApiKey }
       "3" { Install-OpenCode; Configure-ApiKey }
       "0" { return }
-      default { Write-Red "无效选项，请重新输入。" }
+      default { Write-Red "Invalid option. Please try again." }
     }
   }
 }
