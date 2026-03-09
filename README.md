@@ -44,6 +44,16 @@ curl -fsSL https://dl.laobaiapi.cc/codex-setup.sh | bash
 curl -fsSL https://dl.laobaiapi.cc/v1/codex-setup.sh | bash
 ```
 
+## Codex command (Windows CMD/PowerShell)
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr https://dl.laobaiapi.cc/codex-setup.bat -OutFile $env:TEMP\codex-setup.bat; cmd /c $env:TEMP\codex-setup.bat"
+```
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr https://dl.laobaiapi.cc/v1/codex-setup.bat -OutFile $env:TEMP\codex-setup.bat; cmd /c $env:TEMP\codex-setup.bat"
+```
+
 ## Config template
 
 - https://dl.laobaiapi.cc/opencode.template.json

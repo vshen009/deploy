@@ -203,12 +203,21 @@
       <article class="card" data-product="codex">
         <h2>Codex</h2>
         <p class="muted">一键注入 laobai provider 到 Codex 配置，适配 Codex CLI / VSCode(Cursor) Codex 插件 / Codex App。</p>
+        <div class="tabs">
+          <button class="tab active" data-target="codex" data-os="unix">Linux / macOS</button>
+          <button class="tab" data-target="codex" data-os="win">Windows</button>
+        </div>
         <div class="cmd-wrap" data-product="codex" data-os="unix">
           <pre class="cmd" id="cmd-codex-unix">curl -fsSL https://dl.laobaiapi.cc/codex-setup.sh | bash<button class="copy" data-copy="cmd-codex-unix">复制</button></pre>
         </div>
+        <div class="cmd-wrap" data-product="codex" data-os="win" hidden>
+          <pre class="cmd" id="cmd-codex-win">powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr https://dl.laobaiapi.cc/codex-setup.bat -OutFile $env:TEMP\codex-setup.bat; cmd /c $env:TEMP\codex-setup.bat"<button class="copy" data-copy="cmd-codex-win">复制</button></pre>
+        </div>
         <div class="links">
           <a href="/codex-setup.sh">脚本直链：/codex-setup.sh</a>
+          <a href="/codex-setup.bat">脚本直链：/codex-setup.bat</a>
           <a href="/v1/codex-setup.sh">版本固定：/v1/codex-setup.sh</a>
+          <a href="/v1/codex-setup.bat">版本固定：/v1/codex-setup.bat</a>
         </div>
       </article>
     </section>
