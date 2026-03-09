@@ -252,6 +252,36 @@
 
   <script>
     (function () {
+      function fallbackCopy(text) {
+        var textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        var ok = false;
+        try {
+          ok = document.execCommand('copy');
+        } catch (e) {
+          ok = false;
+        }
+        document.body.removeChild(textarea);
+        return ok;
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (e) {
+          }
+        }
+        return fallbackCopy(text);
+      }
+
       function switchTab(product, os) {
         document.querySelectorAll('.tab[data-target="' + product + '"]').forEach(function (btn) {
           btn.classList.toggle('active', btn.dataset.os === os);
@@ -274,7 +304,10 @@
           if (!el) return;
           var text = el.textContent.replace('复制', '').trim();
           try {
-            await navigator.clipboard.writeText(text);
+            var ok = await copyText(text);
+            if (!ok) {
+              throw new Error('copy_failed');
+            }
             btn.textContent = '已复制';
             btn.classList.add('ok');
             setTimeout(function () {
@@ -282,8 +315,9 @@
               btn.classList.remove('ok');
             }, 1200);
           } catch (e) {
-            btn.textContent = '失败';
-            setTimeout(function () { btn.textContent = '复制'; }, 1200);
+            btn.textContent = '手动复制';
+            setTimeout(function () { btn.textContent = '复制'; }, 1400);
+            window.prompt('当前环境限制剪贴板，请手动复制：', text);
           }
         });
       });
