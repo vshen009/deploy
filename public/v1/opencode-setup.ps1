@@ -36,10 +36,10 @@ function Ensure-Node {
 
 function Resolve-InstallCommand {
   if (Get-Command npm -ErrorAction SilentlyContinue) {
-    return "npm install -g opencode"
+    return "npm install -g opencode-ai"
   }
   if (Get-Command pnpm -ErrorAction SilentlyContinue) {
-    return "pnpm add -g opencode"
+    return "pnpm add -g opencode-ai"
   }
   return $null
 }

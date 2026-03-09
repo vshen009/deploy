@@ -4,8 +4,8 @@ set -euo pipefail
 # ====== 可按需修改（只建议改这里）======
 # 可选：手动指定安装命令（优先级最高）
 # 例如:
-#   export OPENCODE_INSTALL_CMD='npm install -g opencode'
-#   export OPENCODE_INSTALL_CMD='pnpm add -g opencode'
+#   export OPENCODE_INSTALL_CMD='npm install -g opencode-ai'
+#   export OPENCODE_INSTALL_CMD='pnpm add -g opencode-ai'
 #   export OPENCODE_INSTALL_CMD='brew install opencode'
 # 未指定时会自动检测 npm / pnpm / brew
 INSTALL_CMD="${OPENCODE_INSTALL_CMD:-}"
@@ -55,12 +55,12 @@ resolve_install_cmd() {
   fi
 
   if command -v npm >/dev/null 2>&1; then
-    printf "%s" "npm install -g opencode"
+    printf "%s" "npm install -g opencode-ai"
     return 0
   fi
 
   if command -v pnpm >/dev/null 2>&1; then
-    printf "%s" "pnpm add -g opencode"
+    printf "%s" "pnpm add -g opencode-ai"
     return 0
   fi
 
