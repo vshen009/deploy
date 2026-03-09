@@ -34,6 +34,16 @@ irm https://dl.laobaiapi.cc/v1/opencode-setup.ps1 | iex
 
 - https://dl.laobaiapi.cc/
 
+## Codex command (Linux/macOS)
+
+```bash
+curl -fsSL https://dl.laobaiapi.cc/codex-setup.sh | bash
+```
+
+```bash
+curl -fsSL https://dl.laobaiapi.cc/v1/codex-setup.sh | bash
+```
+
 ## Config template
 
 - https://dl.laobaiapi.cc/opencode.template.json
