@@ -11,12 +11,22 @@
 curl -fsSL https://dl.laobaiapi.cc/openclaw-setup.sh | bash
 ```
 
+Windows（PowerShell）：
+
+```powershell
+irm https://dl.laobaiapi.cc/openclaw-setup.ps1 | iex
+```
+
 > 适合 Rocky / RHEL 系。脚本会自动弹出菜单，让你选择“全新安装”或“注入 laobai provider”。
 
 版本固定（v1）：
 
 ```bash
 curl -fsSL https://dl.laobaiapi.cc/v1/openclaw-setup.sh | bash
+```
+
+```powershell
+irm https://dl.laobaiapi.cc/v1/openclaw-setup.ps1 | iex
 ```
 
 ## 仓库内手动运行（调试用）

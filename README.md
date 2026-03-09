@@ -8,6 +8,12 @@ Cloudflare Pages static files for one-command OpenCode setup.
 curl -fsSL https://dl.laobaiapi.cc/opencode-setup.sh | bash
 ```
 
+## Windows command
+
+```powershell
+irm https://dl.laobaiapi.cc/opencode-setup.ps1 | iex
+```
+
 ## Non-interactive one-click
 
 ```bash
@@ -19,6 +25,14 @@ curl -fsSL https://dl.laobaiapi.cc/opencode-setup.sh | OPENCODE_API_KEY='sk-xxx'
 ```bash
 curl -fsSL https://dl.laobaiapi.cc/v1/opencode-setup.sh | bash
 ```
+
+```powershell
+irm https://dl.laobaiapi.cc/v1/opencode-setup.ps1 | iex
+```
+
+## Installer hub page
+
+- https://dl.laobaiapi.cc/
 
 ## Config template
 

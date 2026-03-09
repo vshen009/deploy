@@ -3,99 +3,251 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OpenClaw 一键安装 / 注入配置</title>
+  <title>Laobai Installer Hub</title>
   <style>
     :root {
-      --bg: #f5f7fb;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #475569;
-      --accent: #0ea5e9;
-      --border: #dbe3ee;
-      --code-bg: #0b1220;
-      --code-text: #dbeafe;
+      --bg0: #f4f7fb;
+      --bg1: #e8f2ff;
+      --ink: #10243d;
+      --sub: #46607d;
+      --line: #ccd8e7;
+      --card: rgba(255, 255, 255, 0.85);
+      --accent: #0b84ff;
+      --accent2: #18a37a;
+      --code: #0b1220;
+      --code-ink: #dbeafe;
+      --ok: #11845b;
+      --warn: #9a6900;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
-      color: var(--text);
+      color: var(--ink);
+      font-family: "Avenir Next", "SF Pro Display", "Segoe UI Variable", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(1200px 380px at 20% -10%, #d5e9ff 0%, transparent 60%),
+        radial-gradient(900px 300px at 90% 0%, #d9fff1 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg1) 0%, var(--bg0) 45%, #f7fbff 100%);
       line-height: 1.6;
     }
-    .wrap {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 28px 16px 48px;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 24px 16px 60px; }
+    .hero {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.72));
+      backdrop-filter: blur(4px);
       padding: 20px;
-      margin-bottom: 16px;
+      box-shadow: 0 10px 26px rgba(16, 36, 61, 0.08);
+      margin-bottom: 14px;
+      animation: fadeIn .45s ease;
     }
-    h1, h2 { margin: 0 0 12px; }
-    h1 { font-size: 28px; }
-    h2 { font-size: 20px; margin-top: 8px; }
-    p, li { color: var(--muted); }
-    code {
-      background: #eef4ff;
-      border-radius: 6px;
-      padding: 1px 6px;
-      color: #0b3b66;
+    .eyebrow {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #bee0ff;
+      color: #1b5f99;
+      background: #eff7ff;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
-    pre {
-      margin: 0;
-      background: var(--code-bg);
-      color: var(--code-text);
-      border-radius: 10px;
-      padding: 14px;
+    h1 { margin: 12px 0 8px; font-size: clamp(30px, 5vw, 48px); line-height: 1.1; }
+    .sub { margin: 0; color: var(--sub); max-width: 740px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: var(--card);
+      backdrop-filter: blur(3px);
+      box-shadow: 0 8px 20px rgba(16, 36, 61, 0.06);
+      animation: rise .4s ease;
+    }
+    .card h2 { margin: 0 0 6px; font-size: 22px; }
+    .muted { color: var(--sub); margin: 0 0 10px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+    .tab {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all .2s ease;
+    }
+    .tab.active { background: #0e8aff; color: #fff; border-color: #0e8aff; }
+    .cmd {
+      position: relative;
+      background: var(--code);
+      color: var(--code-ink);
+      border-radius: 12px;
+      padding: 12px 92px 12px 12px;
       overflow-x: auto;
+      font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre;
+      border: 1px solid rgba(125, 155, 199, 0.3);
     }
-    a {
-      color: var(--accent);
-      text-decoration: none;
+    .copy {
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      border: 1px solid #2f4f77;
+      background: #102847;
+      color: #dbeafe;
+      border-radius: 8px;
+      font-size: 12px;
+      padding: 5px 8px;
+      cursor: pointer;
     }
-    a:hover { text-decoration: underline; }
+    .copy.ok { border-color: #1f7a5d; color: #b7ffe5; }
+    .links { margin-top: 10px; display: grid; gap: 4px; }
+    .links a { color: var(--accent); text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+    .section {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      padding: 16px;
+    }
+    .section h3 { margin: 0 0 10px; }
+    .verify-list { display: grid; gap: 8px; }
+    details {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 8px 12px;
+      background: #fff;
+      margin-bottom: 8px;
+    }
+    summary { cursor: pointer; font-weight: 600; }
+    .hint-ok { color: var(--ok); font-size: 13px; }
+    .hint-warn { color: var(--warn); font-size: 13px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 34px; } }
   </style>
 </head>
 <body>
   <main class="wrap">
-    <section class="card">
-      <h1>OpenClaw 一键安装 / 注入配置（Rocky Linux）</h1>
-      <p>目标：</p>
-      <ul>
-        <li>方式一：全新安装 OpenClaw，并生成一个可启动的单 provider（laobai）配置。</li>
-        <li>方式二：对已安装 OpenClaw 注入 laobai provider，并把默认模型切到 <code>laobai/gpt-5.3-codex</code>。</li>
-        <li>两种方式都会补齐最低启动要件：<code>gateway.mode=local</code>、<code>gateway.auth.token</code>、默认模型。</li>
-      </ul>
+    <section class="hero">
+      <span class="eyebrow">Installer Hub</span>
+      <h1>OpenCode + OpenClaw 一键安装中心</h1>
+      <p class="sub">按系统复制命令即可安装。已支持 Linux/macOS 和 Windows（PowerShell）。脚本与版本化入口都在本域名下托管。</p>
     </section>
 
-    <section class="card">
-      <h2>一行下载运行（推荐）</h2>
-      <pre><code>curl -fsSL https://dl.laobaiapi.cc/openclaw-setup.sh | bash</code></pre>
+    <section class="grid">
+      <article class="card" data-product="opencode">
+        <h2>OpenCode</h2>
+        <p class="muted">安装 OpenCode CLI，并可写入 <code>opencode.json</code> 的 API Key。</p>
+        <div class="tabs">
+          <button class="tab active" data-target="opencode" data-os="unix">Linux / macOS</button>
+          <button class="tab" data-target="opencode" data-os="win">Windows</button>
+        </div>
+        <div class="cmd-wrap" data-product="opencode" data-os="unix">
+          <pre class="cmd" id="cmd-opencode-unix">curl -fsSL https://dl.laobaiapi.cc/opencode-setup.sh | bash<button class="copy" data-copy="cmd-opencode-unix">复制</button></pre>
+        </div>
+        <div class="cmd-wrap" data-product="opencode" data-os="win" hidden>
+          <pre class="cmd" id="cmd-opencode-win">irm https://dl.laobaiapi.cc/opencode-setup.ps1 | iex<button class="copy" data-copy="cmd-opencode-win">复制</button></pre>
+        </div>
+        <div class="links">
+          <a href="/opencode-setup.sh">脚本直链：/opencode-setup.sh</a>
+          <a href="/opencode-setup.ps1">脚本直链：/opencode-setup.ps1</a>
+          <a href="/v1/opencode-setup.sh">版本固定：/v1/opencode-setup.sh</a>
+          <a href="/v1/opencode-setup.ps1">版本固定：/v1/opencode-setup.ps1</a>
+        </div>
+      </article>
+
+      <article class="card" data-product="openclaw">
+        <h2>OpenClaw</h2>
+        <p class="muted">支持全新安装或注入 laobai provider，并补齐 gateway token。</p>
+        <div class="tabs">
+          <button class="tab active" data-target="openclaw" data-os="unix">Linux / macOS</button>
+          <button class="tab" data-target="openclaw" data-os="win">Windows</button>
+        </div>
+        <div class="cmd-wrap" data-product="openclaw" data-os="unix">
+          <pre class="cmd" id="cmd-openclaw-unix">curl -fsSL https://dl.laobaiapi.cc/openclaw-setup.sh | bash<button class="copy" data-copy="cmd-openclaw-unix">复制</button></pre>
+        </div>
+        <div class="cmd-wrap" data-product="openclaw" data-os="win" hidden>
+          <pre class="cmd" id="cmd-openclaw-win">irm https://dl.laobaiapi.cc/openclaw-setup.ps1 | iex<button class="copy" data-copy="cmd-openclaw-win">复制</button></pre>
+        </div>
+        <div class="links">
+          <a href="/openclaw-setup.sh">脚本直链：/openclaw-setup.sh</a>
+          <a href="/openclaw-setup.ps1">脚本直链：/openclaw-setup.ps1</a>
+          <a href="/v1/openclaw-setup.sh">版本固定：/v1/openclaw-setup.sh</a>
+          <a href="/v1/openclaw-setup.ps1">版本固定：/v1/openclaw-setup.ps1</a>
+        </div>
+      </article>
     </section>
 
-    <section class="card">
-      <h2>版本固定（v1）</h2>
-      <pre><code>curl -fsSL https://dl.laobaiapi.cc/v1/openclaw-setup.sh | bash</code></pre>
+    <section class="section">
+      <h3>安装后验证</h3>
+      <div class="verify-list">
+        <pre class="cmd" id="cmd-check-opencode">opencode --version<button class="copy" data-copy="cmd-check-opencode">复制</button></pre>
+        <pre class="cmd" id="cmd-check-openclaw">openclaw --version<button class="copy" data-copy="cmd-check-openclaw">复制</button></pre>
+      </div>
+      <p class="hint-ok">看到版本号即代表命令可用。</p>
+      <p class="hint-warn">如果命令不存在，重开终端后再试一次，或检查 Node.js/npm 是否安装成功。</p>
     </section>
 
-    <section class="card">
-      <h2>可选参数</h2>
-      <pre><code>bash openclaw-setup.sh --fresh
-bash openclaw-setup.sh --inject
-bash openclaw-setup.sh --help</code></pre>
-    </section>
-
-    <section class="card">
-      <h2>文档与仓库</h2>
-      <ul>
-        <li>README：<a href="https://github.com/vshen009/deploy/blob/main/OpenClaw/README.md">OpenClaw/README.md</a></li>
-        <li>仓库：<a href="https://github.com/vshen009/deploy">vshen009/deploy</a></li>
-      </ul>
+    <section class="section">
+      <h3>常见问题</h3>
+      <details>
+        <summary>Windows 提示脚本执行被禁止</summary>
+        <p>先在 PowerShell 使用管理员身份执行：<code>Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</code>，然后重试。</p>
+      </details>
+      <details>
+        <summary>安装后提示找不到命令</summary>
+        <p>一般是 PATH 未刷新。重开终端，或执行 <code>refreshenv</code>（如果装了 Chocolatey）。</p>
+      </details>
+      <details>
+        <summary>我需要固定版本入口</summary>
+        <p>请使用 <code>/v1/</code> 下的脚本路径，避免后续脚本更新带来行为变化。</p>
+      </details>
     </section>
   </main>
+
+  <script>
+    (function () {
+      function switchTab(product, os) {
+        document.querySelectorAll('.tab[data-target="' + product + '"]').forEach(function (btn) {
+          btn.classList.toggle('active', btn.dataset.os === os);
+        });
+        document.querySelectorAll('.cmd-wrap[data-product="' + product + '"]').forEach(function (panel) {
+          panel.hidden = panel.dataset.os !== os;
+        });
+      }
+
+      document.querySelectorAll('.tab').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          switchTab(btn.dataset.target, btn.dataset.os);
+        });
+      });
+
+      document.querySelectorAll('.copy').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          var id = btn.dataset.copy;
+          var el = document.getElementById(id);
+          if (!el) return;
+          var text = el.textContent.replace('复制', '').trim();
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.textContent = '已复制';
+            btn.classList.add('ok');
+            setTimeout(function () {
+              btn.textContent = '复制';
+              btn.classList.remove('ok');
+            }, 1200);
+          } catch (e) {
+            btn.textContent = '失败';
+            setTimeout(function () { btn.textContent = '复制'; }, 1200);
+          }
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
