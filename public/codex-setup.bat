@@ -37,6 +37,9 @@ if "%API_KEY%"=="" (
   set /p API_KEY=Please input laobai API Key: 
 )
 
+rem Sanitize pasted key (remove CR/LF and surrounding spaces)
+for /f "usebackq delims=" %%A in (`powershell -NoProfile -Command "$k=$env:API_KEY; if($null -eq $k){''} else {(($k -replace "`r|`n","").Trim())}"`) do set "API_KEY=%%A"
+
 if "%API_KEY%"=="" (
   echo.
   echo ERROR: API Key cannot be empty.

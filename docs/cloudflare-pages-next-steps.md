@@ -43,7 +43,6 @@ cd deploy
 以下链接能打开即表示部署成功：
 
 - `https://dl.laobaiapi.cc/opencode-setup.sh`
-- `https://dl.laobaiapi.cc/v1/opencode-setup.sh`
 - `https://dl.laobaiapi.cc/opencode.template.json`
 - `https://dl.laobaiapi.cc/latest.txt`
 

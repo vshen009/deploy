@@ -14,6 +14,11 @@ function Write-Green([string]$Msg) { Write-Host $Msg -ForegroundColor Green }
 function Write-Yellow([string]$Msg) { Write-Host $Msg -ForegroundColor Yellow }
 function Write-Red([string]$Msg) { Write-Host $Msg -ForegroundColor Red }
 
+function Normalize-ApiKey([string]$Key) {
+  if ($null -eq $Key) { return "" }
+  return (($Key -replace "`r|`n", "").Trim())
+}
+
 function Refresh-Path {
   $machine = [Environment]::GetEnvironmentVariable("Path", "Machine")
   $user = [Environment]::GetEnvironmentVariable("Path", "User")
@@ -73,7 +78,7 @@ function Get-KeyMasked([string]$Key) {
 
 function Prompt-ApiKey {
   if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
-    return $ApiKey
+    return (Normalize-ApiKey $ApiKey)
   }
 
   $secure = Read-Host "Enter laobai API Key (hidden)" -AsSecureString
@@ -83,6 +88,8 @@ function Prompt-ApiKey {
   } finally {
     [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
   }
+
+  $plain = Normalize-ApiKey $plain
 
   if ([string]::IsNullOrWhiteSpace($plain)) {
     throw "API Key cannot be empty."

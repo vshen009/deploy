@@ -9,6 +9,13 @@ has_tty() {
   [[ -r /dev/tty ]]
 }
 
+sanitize_secret() {
+  local __v="$1"
+  __v="${__v//$'\r'/}"
+  __v="${__v//$'\n'/}"
+  printf "%s" "$__v"
+}
+
 prompt_read() {
   local __var_name="$1"
   local __prompt="$2"
@@ -18,6 +25,7 @@ prompt_read() {
   else
     read -r -p "$__prompt" __value
   fi
+  __value="$(sanitize_secret "$__value")"
   printf -v "$__var_name" "%s" "$__value"
 }
 
@@ -32,6 +40,7 @@ prompt_read_secret() {
     read -r -s -p "$__prompt" __value
     echo
   fi
+  __value="$(sanitize_secret "$__value")"
   printf -v "$__var_name" "%s" "$__value"
 }
 
@@ -65,6 +74,7 @@ install_runtime() {
 
 prompt_key() {
   prompt_read_secret LAOBAI_API_KEY "请输入 laobai API Key: "
+  LAOBAI_API_KEY="$(sanitize_secret "${LAOBAI_API_KEY:-}")"
   if [[ -z "${LAOBAI_API_KEY:-}" ]]; then
     echo "API Key 不能为空，退出。"
     exit 1
