@@ -68,6 +68,21 @@
     }
     h1 { margin: 12px 0 8px; font-size: clamp(30px, 5vw, 48px); line-height: 1.1; }
     .sub { margin: 0; color: var(--sub); max-width: 740px; }
+    .hero-spotlight {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid #b7d8ff;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #eef6ff, #f6fbff);
+    }
+    .hero-spotlight a {
+      display: inline-block;
+      color: #0b4fa8;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .hero-spotlight a:hover { text-decoration: underline; }
     .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
     .card {
       border: 1px solid var(--line);
@@ -159,6 +174,9 @@
       </div>
       <h1>老白API 一键安装中心</h1>
       <p class="sub">按系统复制命令即可安装。已支持 Linux/macOS 和 Windows（PowerShell）。脚本与版本化入口都在本域名下托管。</p>
+      <div class="hero-spotlight">
+        <a href="/openclaw-easiest-install-guide.png" target="_blank" rel="noopener">（最简单的办法安装 OpenClaw 和配置 API key）</a>
+      </div>
     </section>
 
     <section class="grid">
