@@ -24,7 +24,6 @@
       "laobai": {
         "baseUrl": "https://laobaiapi.cc/v1",
         "apiKey": "__LAOBAI_API_KEY__",
-        "api": "openai-responses",
         "authHeader": true,
         "headers": {
           "User-Agent": "curl/8.5.0"
