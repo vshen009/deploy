@@ -133,7 +133,6 @@ function Write-FreshConfig([string]$key, [string]$token) {
         laobai = [pscustomobject]@{
           baseUrl = "https://laobaiapi.cc/v1"
           apiKey = $key
-          api = "openai-responses"
           authHeader = $true
           headers = [pscustomobject]@{ "User-Agent" = "PowerShell" }
           models = @(
