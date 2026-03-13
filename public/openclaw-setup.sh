@@ -133,7 +133,6 @@ write_fresh_config() {
       "laobai": {
         "baseUrl": "https://laobaiapi.cc/v1",
         "apiKey": "${LAOBAI_API_KEY}",
-        "api": "openai-responses",
         "authHeader": true,
         "headers": {
           "User-Agent": "curl/8.5.0"
