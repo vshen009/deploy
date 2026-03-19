@@ -4,6 +4,8 @@ set -euo pipefail
 CONFIG_DIR="$HOME/.openclaw"
 CONFIG_PATH="$CONFIG_DIR/openclaw.json"
 MODE_ARG="${1:-}"
+PRIMARY_MODEL=""
+FALLBACK_MODEL=""
 
 has_tty() {
   [[ -r /dev/tty ]]
@@ -73,7 +75,7 @@ install_runtime() {
 }
 
 prompt_key() {
-  prompt_read_secret LAOBAI_API_KEY "请输入 laobai API Key: "
+  prompt_read LAOBAI_API_KEY "请输入 laobai API Key: "
   LAOBAI_API_KEY="$(sanitize_secret "${LAOBAI_API_KEY:-}")"
   if [[ -z "${LAOBAI_API_KEY:-}" ]]; then
     echo "API Key 不能为空，退出。"
@@ -103,6 +105,36 @@ prompt_key() {
   echo "已接收 API Key（校验展示）：${head}${middle_mask}${tail}"
 }
 
+prompt_primary_model() {
+  local choice=""
+  echo "请选择默认模型："
+  echo "  1) laobai/gpt-5.4-mini"
+  echo "  2) laobai/gpt-5.3-codex"
+  prompt_read choice "输入 1 或 2 [默认1]: "
+
+  if [[ -z "$choice" ]]; then
+    choice="1"
+  fi
+
+  case "$choice" in
+    1)
+      PRIMARY_MODEL="laobai/gpt-5.4-mini"
+      FALLBACK_MODEL="laobai/gpt-5.3-codex"
+      ;;
+    2)
+      PRIMARY_MODEL="laobai/gpt-5.3-codex"
+      FALLBACK_MODEL="laobai/gpt-5.4-mini"
+      ;;
+    *)
+      echo "无效模型选择，退出。"
+      exit 1
+      ;;
+  esac
+
+  echo "默认模型: ${PRIMARY_MODEL}"
+  echo "首选回退: ${FALLBACK_MODEL}"
+}
+
 write_fresh_config() {
   local gateway_token="$1"
   mkdir -p "$CONFIG_DIR"
@@ -118,9 +150,15 @@ write_fresh_config() {
   "agents": {
     "defaults": {
       "model": {
-        "primary": "laobai/gpt-5.3-codex"
+        "primary": "${PRIMARY_MODEL}",
+        "fallback": [
+          "${FALLBACK_MODEL}"
+        ]
       },
       "models": {
+        "laobai/gpt-5.4-mini": {
+          "alias": "laobai-mini"
+        },
         "laobai/gpt-5.3-codex": {
           "alias": "laobai-codex"
         }
@@ -138,6 +176,21 @@ write_fresh_config() {
           "User-Agent": "curl/8.5.0"
         },
         "models": [
+          {
+            "id": "gpt-5.4-mini",
+            "name": "GPT-5.4 Mini (via laobai)",
+            "api": "openai-responses",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 204800,
+            "maxTokens": 8192
+          },
           {
             "id": "gpt-5.3-codex",
             "name": "GPT-5.3 Codex (via laobai)",
@@ -171,9 +224,9 @@ inject_laobai() {
     echo '{}' > "$CONFIG_PATH"
   fi
 
-  python3 - "$CONFIG_PATH" "$LAOBAI_API_KEY" "$gateway_token" <<'PY'
+  python3 - "$CONFIG_PATH" "$LAOBAI_API_KEY" "$gateway_token" "$PRIMARY_MODEL" "$FALLBACK_MODEL" <<'PY'
 import json, sys
-path, api_key, token = sys.argv[1:4]
+path, api_key, token, primary_model, fallback_model = sys.argv[1:6]
 with open(path, 'r', encoding='utf-8') as f:
     text = f.read().strip() or '{}'
 try:
@@ -190,30 +243,82 @@ if not auth.get('token'):
 
 agents = data.setdefault('agents', {})
 defaults = agents.setdefault('defaults', {})
-defaults['model'] = {'primary': 'laobai/gpt-5.3-codex'}
+
+old_model = defaults.get('model', {})
+
+def as_list(value):
+    if isinstance(value, str):
+        return [value] if value else []
+    if isinstance(value, list):
+        return [item for item in value if isinstance(item, str) and item]
+    return []
+
+fallback_chain = [fallback_model]
+fallback_chain.extend(as_list(old_model.get('primary')))
+fallback_chain.extend(as_list(old_model.get('fallback')))
+
+seen = set()
+deduped_fallback = []
+for item in fallback_chain:
+    if item == primary_model or item in seen:
+        continue
+    seen.add(item)
+    deduped_fallback.append(item)
+
+defaults['model'] = {
+    'primary': primary_model,
+    'fallback': deduped_fallback,
+}
+
 allow = defaults.setdefault('models', {})
+allow['laobai/gpt-5.4-mini'] = {'alias': 'laobai-mini'}
 allow['laobai/gpt-5.3-codex'] = {'alias': 'laobai-codex'}
 
 models = data.setdefault('models', {})
 models['mode'] = 'merge'
 providers = models.setdefault('providers', {})
-providers['laobai'] = {
-    'baseUrl': 'https://laobaiapi.cc/v1',
-    'apiKey': api_key,
+laobai = providers.setdefault('laobai', {})
+laobai['baseUrl'] = 'https://laobaiapi.cc/v1'
+laobai['apiKey'] = api_key
+laobai['api'] = 'openai-responses'
+laobai['authHeader'] = True
+headers = laobai.setdefault('headers', {})
+headers['User-Agent'] = 'curl/8.5.0'
+
+existing_models = laobai.get('models')
+if not isinstance(existing_models, list):
+    existing_models = []
+
+def upsert_model(model_list, model_def):
+    target_id = model_def.get('id')
+    for item in model_list:
+        if isinstance(item, dict) and item.get('id') == target_id:
+            item.update(model_def)
+            return
+    model_list.append(model_def)
+
+upsert_model(existing_models, {
+    'id': 'gpt-5.4-mini',
+    'name': 'GPT-5.4 Mini (via laobai)',
     'api': 'openai-responses',
-    'authHeader': True,
-    'headers': {'User-Agent': 'curl/8.5.0'},
-    'models': [{
-        'id': 'gpt-5.3-codex',
-        'name': 'GPT-5.3 Codex (via laobai)',
-        'api': 'openai-responses',
-        'reasoning': True,
-        'input': ['text', 'image'],
-        'cost': {'input': 0, 'output': 0, 'cacheRead': 0, 'cacheWrite': 0},
-        'contextWindow': 204800,
-        'maxTokens': 8192,
-    }],
-}
+    'reasoning': True,
+    'input': ['text', 'image'],
+    'cost': {'input': 0, 'output': 0, 'cacheRead': 0, 'cacheWrite': 0},
+    'contextWindow': 204800,
+    'maxTokens': 8192,
+})
+upsert_model(existing_models, {
+    'id': 'gpt-5.3-codex',
+    'name': 'GPT-5.3 Codex (via laobai)',
+    'api': 'openai-responses',
+    'reasoning': True,
+    'input': ['text', 'image'],
+    'cost': {'input': 0, 'output': 0, 'cacheRead': 0, 'cacheWrite': 0},
+    'contextWindow': 204800,
+    'maxTokens': 8192,
+})
+
+laobai['models'] = existing_models
 
 with open(path, 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
@@ -273,6 +378,7 @@ EOF
     1)
       install_runtime
       prompt_key
+      prompt_primary_model
       GATEWAY_TOKEN="$(gen_token)"
       echo "==> [3/4] 生成全新 openclaw.json"
       write_fresh_config "$GATEWAY_TOKEN"
@@ -282,6 +388,7 @@ EOF
       require_cmd python3
       require_cmd openclaw
       prompt_key
+      prompt_primary_model
       GATEWAY_TOKEN="$(gen_token)"
       echo "==> 注入 laobai provider 并切换默认模型"
       inject_laobai "$GATEWAY_TOKEN"
