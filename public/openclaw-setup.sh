@@ -151,7 +151,7 @@ write_fresh_config() {
     "defaults": {
       "model": {
         "primary": "${PRIMARY_MODEL}",
-        "fallback": [
+        "fallbacks": [
           "${FALLBACK_MODEL}"
         ]
       },
@@ -255,6 +255,7 @@ def as_list(value):
 
 fallback_chain = [fallback_model]
 fallback_chain.extend(as_list(old_model.get('primary')))
+fallback_chain.extend(as_list(old_model.get('fallbacks')))
 fallback_chain.extend(as_list(old_model.get('fallback')))
 
 seen = set()
@@ -267,7 +268,7 @@ for item in fallback_chain:
 
 defaults['model'] = {
     'primary': primary_model,
-    'fallback': deduped_fallback,
+    'fallbacks': deduped_fallback,
 }
 
 allow = defaults.setdefault('models', {})

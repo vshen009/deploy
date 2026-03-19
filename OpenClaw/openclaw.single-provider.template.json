@@ -10,7 +10,9 @@
     "defaults": {
       "model": {
         "primary": "laobai/gpt-5.4-mini",
-        "fallback": "laobai/gpt-5.3-codex"
+        "fallbacks": [
+          "laobai/gpt-5.3-codex"
+        ]
       },
       "models": {
         "laobai/gpt-5.4-mini": {
